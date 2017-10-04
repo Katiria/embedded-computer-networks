@@ -17,11 +17,17 @@
 #include "pinmappings.h"
 #include "clock.h"
 #include "gpio.h"
+#include "random_numbers.h"
 
 // map the led to GPIO PI1 (again, this is the inbuilt led)
-gpio_pin_t led1 = {PI_1, GPIOI, GPIO_PIN_1};
-gpio_pin_t led2 = {PB_14, GPIOB, GPIO_PIN_14};
-
+gpio_pin_t one = {PB_4, GPIOB, GPIO_PIN_4};
+gpio_pin_t two = {PC_7, GPIOC, GPIO_PIN_7};
+gpio_pin_t three = {PG_7, GPIOG, GPIO_PIN_7};
+gpio_pin_t four = {PH_6, GPIOH, GPIO_PIN_6};
+gpio_pin_t five = {PC_6, GPIOC, GPIO_PIN_6};
+gpio_pin_t six = {PI_0, GPIOI, GPIO_PIN_0};
+gpio_pin_t seven = {PG_6, GPIOG, GPIO_PIN_6};
+gpio_pin_t s = {PI_1, GPIOG, GPIO_PIN_6};
 // this is the main method
 int main()
 {
@@ -31,22 +37,75 @@ int main()
   init_sysclk_216MHz();
   
   // initialise the gpio pins
-  init_gpio(led1, OUTPUT);
-  init_gpio(led2, OUTPUT);
+  init_gpio(one, OUTPUT);
+  init_gpio(two, OUTPUT);
+	init_gpio(three, OUTPUT);
+	init_gpio(four, OUTPUT);
+	init_gpio(five, OUTPUT);
+	init_gpio(six, OUTPUT);
+	init_gpio(seven, OUTPUT);
+	init_gpio(s, INPUT);
   
   // loop forever ...
   while(1)
   {
-    // toggle the led on the gpio pin
-    toggle_gpio(led1);
-    
-    // wait for 1 second
-    HAL_Delay(1000);
+		// clear all leds
+		write_gpio(one, LOW);
+		write_gpio(two, LOW);
+		write_gpio(three, LOW);
+		write_gpio(four, LOW);
+		write_gpio(five, LOW);
+		write_gpio(six, LOW);
+		write_gpio(seven, LOW);
 		
-    // toggle the led on the gpio pin
-    toggle_gpio(led2);
-    
-    // wait for 1 second
-    HAL_Delay(1000);
-  }
+		// read button
+		if(read_gpio(s))
+		{
+			// throw random number and modulo by 6
+			uint32_t rnd = (get_random_int() %6 ) +1;
+			
+			// turn on appropriate leds
+			if(rnd==1)
+			{
+				write_gpio(four, HIGH);			
+			}
+			else if (rnd==2)
+			{
+				write_gpio(two, HIGH);
+				write_gpio(six, HIGH);
+			}	
+			else if (rnd==3)
+			{
+				write_gpio(two, HIGH);
+				write_gpio(six, HIGH);
+				write_gpio(four, HIGH);
+			}
+			else if (rnd==4)
+			{
+				write_gpio(one, HIGH);
+				write_gpio(two, HIGH);
+				write_gpio(six, HIGH);
+				write_gpio(seven, HIGH);
+			}
+			else if (rnd==5)
+			{
+				write_gpio(one, HIGH);
+				write_gpio(two, HIGH);
+				write_gpio(four, HIGH);
+				write_gpio(six, HIGH);
+				write_gpio(seven, HIGH);
+			}
+			else
+			{
+				write_gpio(one, HIGH);
+				write_gpio(two, HIGH);
+				write_gpio(three, HIGH);
+				write_gpio(five, HIGH);
+				write_gpio(six, HIGH);
+				write_gpio(seven, HIGH);
+			}	
+			//time delay before resetting
+			HAL_Delay(2000);
+		}
+	}
 }
