@@ -27,7 +27,7 @@ gpio_pin_t four = {PH_6, GPIOH, GPIO_PIN_6};
 gpio_pin_t five = {PC_6, GPIOC, GPIO_PIN_6};
 gpio_pin_t six = {PI_0, GPIOI, GPIO_PIN_0};
 gpio_pin_t seven = {PG_6, GPIOG, GPIO_PIN_6};
-gpio_pin_t s = {PI_1, GPIOG, GPIO_PIN_6};
+gpio_pin_t s = {PI_1, GPIOI, GPIO_PIN_1};
 // this is the main method
 int main()
 {
@@ -46,6 +46,8 @@ int main()
 	init_gpio(seven, OUTPUT);
 	init_gpio(s, INPUT);
   
+	init_random();
+	
   // loop forever ...
   while(1)
   {
