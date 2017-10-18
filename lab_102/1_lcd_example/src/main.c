@@ -80,13 +80,19 @@ int main()
   // display an "uptime" counter
   while(1)
   {
+		// make adc values for temp 
 		uint16_t adc_val = read_adc(pot);
+		float temp = ((((adc_val / 4095.0) * 3.3) - 0.5) * 1000.0) / 10.0;
 		
 		//format a string based around the adc value and print to lcd
-		char st[12];
-		sprintf(st, "ADC = %4d", adc_val);
+		char st1[20];
+		sprintf(st1, "TEMP = %2.2f", temp);
 		
-		BSP_LCD_DisplayStringAtLine(6, (uint8_t *)st);
+		char st2[20];
+		sprintf(st2, "ADC = %4d", adc_val);
+		
+		BSP_LCD_DisplayStringAtLine(6, (uint8_t *)st1);
+		BSP_LCD_DisplayStringAtLine(5, (uint8_t *)st2);
 		BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
 		BSP_LCD_FillRect( 0, 200, 450, 12 );
 		BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
