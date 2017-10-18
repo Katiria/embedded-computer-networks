@@ -15,6 +15,18 @@
 #include "pinmappings.h"
 #include "clock.h"
 #include "stm32746g_discovery_lcd.h"
+#include "adc.h"
+#include "gpio.h"
+
+// include the serial configuration files
+#include "serial.h"
+
+// include the stdio library
+#include <stdio.h>
+
+// map the led to GPIO PA8 and the potentiometer to PA0
+gpio_pin_t led = {PI_1, GPIOI, GPIO_PIN_1};
+gpio_pin_t pot = {PA_0, GPIOA, GPIO_PIN_0};
 
 // LCD DEFINES
 
@@ -42,16 +54,21 @@ int main()
   BSP_LCD_Init();
   BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER, SDRAM_DEVICE_ADDR);
   BSP_LCD_SelectLayer(LTDC_ACTIVE_LAYER);
+	
+	 // initialise the uart, adc and gpio pins
+  init_adc(pot);
+  init_gpio(led, OUTPUT);
+  
 
   // set the background colour to blue and clear the lcd
-  BSP_LCD_SetBackColor(LCD_COLOR_BLUE);
-  BSP_LCD_Clear(LCD_COLOR_BLUE);
+  BSP_LCD_SetBackColor(LCD_COLOR_CYAN);
+  BSP_LCD_Clear(LCD_COLOR_CYAN);
   
   // set the font to use
   BSP_LCD_SetFont(&Font24); 
   
   // print the welcome message ...
-  BSP_LCD_SetTextColor(LCD_COLOR_WHITE);
+  BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
   BSP_LCD_DisplayStringAtLine(0, (uint8_t *)BOARDER);
   BSP_LCD_DisplayStringAtLine(1, (uint8_t *)welcome_message[0]);
   BSP_LCD_DisplayStringAtLine(2, (uint8_t *)welcome_message[1]);
@@ -61,17 +78,20 @@ int main()
   HAL_Delay(5000);
   
   // display an "uptime" counter
-  BSP_LCD_DisplayStringAtLine(5, (uint8_t *)"Current uptime =");
-  int counter = 0;
   while(1)
   {
-    // format a string based around the uptime counter
-    char str[20];
-    sprintf(str, "%d s", counter++);
-    
-    // print the message to the lcd
-    BSP_LCD_ClearStringLine(6);
-    BSP_LCD_DisplayStringAtLine(6, (uint8_t *)str);
+		uint16_t adc_val = read_adc(pot);
+		
+		//format a string based around the adc value and print to lcd
+		char st[12];
+		sprintf(st, "ADC = %4d", adc_val);
+		
+		BSP_LCD_DisplayStringAtLine(6, (uint8_t *)st);
+		BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
+		BSP_LCD_FillRect( 0, 200, 450, 12 );
+		BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
+		BSP_LCD_FillRect( 0, 200, adc_val/11, 12 );
+		
     
     HAL_Delay(1000);
   }
