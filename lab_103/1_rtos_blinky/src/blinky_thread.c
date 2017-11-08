@@ -79,7 +79,7 @@ void led_1_thread(void const *argument)
   {
     // toggle the first led on the gpio pin
     toggle_gpio(led1);
-    dumb_delay(500);
+    osDelay(500);
   }
 }
 
@@ -90,7 +90,7 @@ void led_2_thread(void const *argument)
   {
     // toggle the second led on the gpio pin
     toggle_gpio(led2);
-    dumb_delay(200);
+    osDelay(200);
   }
 }
 
@@ -101,7 +101,7 @@ void led_3_thread(void const *argument)
   {
     // toggle the second led on the gpio pin
     toggle_gpio(led3);
-    dumb_delay(1000);
+    osDelay(1000);
   }
 }
 

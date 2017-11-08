@@ -26,7 +26,9 @@
 
 // map the led to GPIO PA8 and the potentiometer to PA0
 gpio_pin_t led = {PI_1, GPIOI, GPIO_PIN_1};
-gpio_pin_t pot = {PA_0, GPIOA, GPIO_PIN_0};
+
+gpio_pin_t pot = {PF_6, GPIOF, GPIO_PIN_6};
+gpio_pin_t temp = {PF_7, GPIOF, GPIO_PIN_7};
 
 // LCD DEFINES
 
@@ -57,8 +59,9 @@ int main()
 	
 	 // initialise the uart, adc and gpio pins
   init_adc(pot);
+	init_adc(temp);
+	
   init_gpio(led, OUTPUT);
-  
 
   // set the background colour to blue and clear the lcd
   BSP_LCD_SetBackColor(LCD_COLOR_CYAN);
@@ -75,28 +78,59 @@ int main()
   BSP_LCD_DisplayStringAtLine(3, (uint8_t *)BOARDER); 
     
   // delay a little ...
-  HAL_Delay(5000);
-  
+  BSP_LCD_DisplayStringAtLine(4, (uint8_t *)"Calibrating ...");
+	
+	int sensor_max = 0;
+	int sensor_min = 100000;
+	
+	while (HAL_GetTick() < 10000)
+	{
+		int sensor_val = read_adc(pot);
+		
+		if (sensor_val > sensor_max)
+		{
+			sensor_max = sensor_val;
+		}
+		if (sensor_val < sensor_min)
+		{
+			sensor_min = sensor_val;
+		}		
+	}
+	
+	float sensor_range = (float)(sensor_max-sensor_min);
+	char st4[20];
+	sprintf(st4, "Range = %4d - %4d", sensor_min, sensor_max);
+	BSP_LCD_DisplayStringAtLine(4, (uint8_t *)st4);
+		
   // display an "uptime" counter
   while(1)
   {
 		// make adc values for temp 
-		uint16_t adc_val = read_adc(pot);
-		float temp = ((((adc_val / 4095.0) * 3.3) - 0.5) * 1000.0) / 10.0;
+		uint16_t adc_val_tmp = read_adc(temp);
+		float temp = ((((adc_val_tmp / 4095.0) * 3.3) - 0.5) * 1000.0) / 10.0;
+		
+		uint16_t adc_val_lht = read_adc(pot);
+		float LightPercentage = (((adc_val_lht - sensor_min) / (sensor_range))*100.0);
 		
 		//format a string based around the adc value and print to lcd
 		char st1[20];
-		sprintf(st1, "TEMP = %2.2f", temp);
+		sprintf(st1, "Temp = %2.2f", temp);
 		
-		char st2[20];
-		sprintf(st2, "ADC = %4d", adc_val);
-		
+		char st3[20];
+		sprintf(st3, "Light \% = %3.2f", LightPercentage);
+				
 		BSP_LCD_DisplayStringAtLine(6, (uint8_t *)st1);
-		BSP_LCD_DisplayStringAtLine(5, (uint8_t *)st2);
+		BSP_LCD_DisplayStringAtLine(7, (uint8_t *)st3);
+		
+		// clear bar charts
 		BSP_LCD_SetTextColor(LCD_COLOR_CYAN);
 		BSP_LCD_FillRect( 0, 200, 450, 12 );
+		BSP_LCD_FillRect( 0, 220, 450, 12 );
+		
+		// draw bar charts
 		BSP_LCD_SetTextColor(LCD_COLOR_ORANGE);
-		BSP_LCD_FillRect( 0, 200, adc_val/11, 12 );
+		BSP_LCD_FillRect( 0, 200, adc_val_tmp/5, 12 );
+		BSP_LCD_FillRect( 0, 220, (int)((LightPercentage / 100.0) * 420), 12 );
 		
     
     HAL_Delay(1000);
